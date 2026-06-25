@@ -1,0 +1,466 @@
+/* темы: палитра меняется по data-theme на body —
+   синяя по умолчанию, зелёная при успехе, красно-розовая при ошибке;
+   цвета переходят плавно через transition на фоновых слоях */
+:root {
+  --text: #eef2f8;
+  --muted: #9fb0c8;
+  --radius: 16px;
+  --font: 'Unbounded', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  /* перекрывается темами ниже */
+  --bg-base: #0b0f17;
+  --orb-a: #5c9ceb;
+  --orb-b: #3b4fd0;
+  --orb-c: #2bb8ff;
+  --accent: #5c9ceb;
+  --on-card: rgba(255, 255, 255, 0.06);
+  --card-border: rgba(255, 255, 255, 0.12);
+}
+
+body[data-theme='default'] {
+  --bg-base: #0b0f17;
+  --orb-a: #5c9ceb;
+  --orb-b: #3b4fd0;
+  --orb-c: #2bb8ff;
+  --accent: #6aa6ff;
+  --muted: #9fb0c8;
+}
+body[data-theme='success'] {
+  --bg-base: #06100c;
+  --orb-a: #007342;
+  --orb-b: #2bfff8;
+  --orb-c: #b0fcce;
+  --accent: #2bffc2;
+  --muted: #93c8b3;
+}
+body[data-theme='error'] {
+  --bg-base: #120b0f;
+  --orb-a: #ff5e69;
+  --orb-b: #ff96e8;
+  --orb-c: #ffc29e;
+  --accent: #ff7a86;
+  --muted: #d3a7b4;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background: var(--bg-base);
+  color: var(--text);
+  font-family: var(--font);
+  font-weight: 400;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  line-height: 1.55;
+  transition: background 2.4s cubic-bezier(0.4, 0, 0.2, 1);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* живой градиентный фон */
+.bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: var(--bg-base);
+  transition: background 2.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.orb {
+  position: absolute;
+  width: 62vw;
+  height: 62vw;
+  max-width: 880px;
+  max-height: 880px;
+  border-radius: 50%;
+  filter: blur(85px);
+  opacity: 0.6;
+  mix-blend-mode: screen;
+  transition: background 2.4s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+.orb-1 {
+  background: radial-gradient(circle at 30% 30%, var(--orb-a), transparent 70%);
+  top: -12%;
+  left: -10%;
+  animation: drift1 13s ease-in-out infinite alternate;
+}
+.orb-2 {
+  background: radial-gradient(circle at 50% 50%, var(--orb-b), transparent 70%);
+  bottom: -18%;
+  right: -12%;
+  animation: drift2 16s ease-in-out infinite alternate;
+}
+.orb-3 {
+  background: radial-gradient(circle at 50% 50%, var(--orb-c), transparent 70%);
+  top: 22%;
+  left: 38%;
+  opacity: 0.45;
+  animation: drift3 11s ease-in-out infinite alternate;
+}
+/* затемняющая вуаль для читаемости текста поверх ярких пятен */
+.bg-veil {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 80% at 50% 10%, transparent 40%, rgba(0, 0, 0, 0.55) 100%);
+}
+@keyframes drift1 {
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    transform: translate(26vw, 16vh) scale(1.3);
+  }
+}
+@keyframes drift2 {
+  from {
+    transform: translate(0, 0) scale(1.15);
+  }
+  to {
+    transform: translate(-28vw, -14vh) scale(0.95);
+  }
+}
+@keyframes drift3 {
+  from {
+    transform: translate(0, 0) scale(0.85);
+  }
+  to {
+    transform: translate(-20vw, 20vh) scale(1.3);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .orb {
+    animation: none;
+  }
+}
+
+#app {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 3rem 1.25rem 5rem;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+header h1 {
+  font-size: 1.85rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.6rem;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.45);
+}
+header p {
+  margin: 0 auto;
+  max-width: 620px;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+/* стеклянные карточки */
+.card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 1.4rem;
+  margin-bottom: 1.25rem;
+  backdrop-filter: blur(22px) saturate(140%);
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
+  box-shadow:
+    0 18px 50px rgba(0, 0, 0, 0.35),
+    0 0 70px -18px color-mix(in srgb, var(--accent) 55%, transparent);
+  transition: box-shadow 2.4s cubic-bezier(0.4, 0, 0.2, 1), border-color 2.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* плавное появление и скрытие блоков вместо резкого */
+.faded {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.55s cubic-bezier(0.4, 0, 0.2, 1), transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.faded.shown {
+  opacity: 1;
+  transform: none;
+}
+
+/* зона загрузки */
+.dropzone {
+  border: 1.5px dashed rgba(255, 255, 255, 0.22);
+  border-radius: var(--radius);
+  padding: 2.6rem 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, transform 0.2s;
+  color: var(--muted);
+}
+.dropzone:hover,
+.dropzone.dragover {
+  border-color: var(--accent);
+  background: rgba(255, 255, 255, 0.04);
+}
+.dropzone strong {
+  color: var(--text);
+}
+.dropzone .formats {
+  font-size: 0.8rem;
+  margin-top: 0.55rem;
+  letter-spacing: 0.02em;
+}
+.dz-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 1rem;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--accent) 40%, transparent),
+    color-mix(in srgb, var(--accent) 12%, transparent)
+  );
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, rgba(255, 255, 255, 0.2));
+  box-shadow: 0 8px 26px color-mix(in srgb, var(--accent) 45%, transparent);
+  transition: background 2.4s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 2.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 2.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.dz-icon svg {
+  width: 30px;
+  height: 30px;
+}
+.dropzone .dz-title {
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.98rem;
+}
+
+/* кнопки */
+.btn {
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.86rem;
+  letter-spacing: -0.01em;
+  border: none;
+  border-radius: 12px;
+  padding: 0.72rem 1.3rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: transform 0.12s, box-shadow 0.2s, background 0.2s, opacity 0.2s;
+}
+.btn svg {
+  width: 17px;
+  height: 17px;
+}
+.btn:active {
+  transform: translateY(1px);
+}
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+/* главная кнопка белая, чтобы читалась на любом градиенте */
+.btn-primary {
+  background: #fff;
+  color: #0b0f17;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.4) inset;
+}
+.btn-primary:not(:disabled):hover {
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4), 0 0 22px var(--accent);
+}
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  border: 1px solid var(--card-border);
+}
+.btn-secondary:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+.btn-danger {
+  background: rgba(255, 94, 105, 0.15);
+  color: #ff8a93;
+  border: 1px solid rgba(255, 94, 105, 0.5);
+}
+.btn-danger:not(:disabled):hover {
+  background: rgba(255, 94, 105, 0.25);
+}
+.controls {
+  display: flex;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 1.1rem;
+}
+.controls .meta {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* прогресс */
+.progress-wrap {
+  margin-top: 1.1rem;
+}
+.progress-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  margin-bottom: 0.45rem;
+  color: var(--text);
+}
+.progress-bar {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--orb-c));
+  box-shadow: 0 0 16px var(--accent);
+  transition: width 0.18s ease, background 1.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* панель тонкой настройки */
+.adjust-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.1rem;
+}
+.adjust-head h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0;
+}
+.btn-sm {
+  padding: 0.45rem 0.85rem;
+  font-size: 0.85rem;
+}
+.slider-row {
+  display: grid;
+  grid-template-columns: 130px 1fr 56px;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 0.95rem;
+}
+.slider-row label {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.slider-row input[type='range'] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+.slider-val {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* сравнение до/после */
+.compare {
+  position: relative;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+  touch-action: none;
+  cursor: ew-resize;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.compare .cmp-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.compare .base {
+  position: relative;
+}
+.compare .cmp-reveal {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  width: 50%;
+  pointer-events: none;
+}
+.compare .cmp-reveal .cmp-img {
+  max-width: none;
+}
+.compare .cmp-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  background: #fff;
+  transform: translateX(-1px);
+  pointer-events: none;
+  box-shadow: 0 0 12px var(--accent);
+}
+.compare .cmp-handle::after {
+  content: '⇆';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--accent);
+  color: #07121f;
+  border-radius: 999px;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  font-size: 0.95rem;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+.compare .cmp-tag {
+  position: absolute;
+  top: 0.6rem;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  pointer-events: none;
+}
+.compare .cmp-tag.left {
+  left: 0.6rem;
+}
+.compare .cmp-tag.right {
+  right: 0.6rem;
+}
+
+/* сообщения */
+.error-msg {
+  color: #ff9aa3;
+  margin-top: 1rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+.hidden {
+  display: none !important;
+}

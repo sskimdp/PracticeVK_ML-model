@@ -1,0 +1,15 @@
+node_modules
+dist
+*.local
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+
+# Python (обучение модели)
+training/__pycache__/
+training/.venv/
+training/venv/
+training/data/
+*.pyc
+
+.claude/
